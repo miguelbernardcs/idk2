@@ -1,0 +1,155 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background-color: #121212;
+  color: #ffffff;
+  height: 100vh;
+  display: flex;
+}
+
+.app-container {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 280px;
+  background-color: #1e1e1e;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border-right: 1px solid #333;
+}
+
+.profile-card, .groups-card {
+  background-color: #2a2a2a;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.profile-card p {
+  font-size: 0.8rem;
+  word-break: break-all;
+  margin: 8px 0;
+}
+
+ul#lista-grupos {
+  list-style: none;
+  margin: 10px 0;
+}
+
+ul#lista-grupos li {
+  padding: 8px;
+  background: #3a3a3a;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+ul#lista-grupos li:hover {
+  background: #4a4a4a;
+}
+
+button {
+  background-color: #0084ff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 5px;
+  width: 100%;
+}
+
+button:hover { opacity: 0.9; }
+.btn-danger { background-color: #d93025; }
+.btn-warning { background-color: #e67e22; }
+.btn-mic { background-color: #27ae60; }
+
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header {
+  background-color: #1e1e1e;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #333;
+}
+
+.call-controls {
+  display: flex;
+  gap: 5px;
+}
+
+.call-controls button {
+  width: auto;
+}
+
+.video-container {
+  display: flex;
+  justify-content: center;
+  background-color: #000;
+}
+
+#localVideo {
+  max-width: 200px;
+  border-radius: 8px;
+}
+
+.chat-box {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.msg {
+  max-width: 60%;
+  padding: 10px;
+  border-radius: 8px;
+  word-wrap: break-word;
+}
+
+.enviada {
+  align-self: flex-end;
+  background-color: #0084ff;
+}
+
+.recebida {
+  align-self: flex-start;
+  background-color: #333;
+}
+
+.chat-footer {
+  padding: 15px;
+  background-color: #1e1e1e;
+  display: flex;
+  gap: 10px;
+}
+
+.chat-footer input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #333;
+  background-color: #2a2a2a;
+  color: white;
+}
+
+.chat-footer button {
+  width: auto;
+}
