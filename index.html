@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu Chat Completo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Menu Lateral -->
+    <aside class="sidebar">
+      <div class="profile-card">
+        <h3>Meu Perfil</h3>
+        <p>ID: <b id="meu-user-id">...</b></p>
+        <button onclick="atualizarNome(prompt('Novo nome:'))">Mudar Nome</button>
+        <button onclick="excluirConta()" class="btn-danger">Excluir Conta</button>
+      </div>
+
+      <div class="groups-card">
+        <h3>Meus Grupos</h3>
+        <ul id="lista-grupos"></ul>
+        <button onclick="criarGrupoPrivado(prompt('Nome do Grupo Privado:'))">+ Criar Grupo</button>
+        <button onclick="adicionarMembroAoGrupo(prompt('ID do usuário a adicionar:'))">+ Add Membro</button>
+        <button onclick="removerMembroDoGrupo(prompt('ID do usuário a remover:'))" class="btn-warning">- Rem Membro</button>
+      </div>
+    </aside>
+
+    <!-- Área Principal de Chat -->
+    <main class="chat-area">
+      <header class="chat-header">
+        <h2 id="nome-grupo-atual">Geral</h2>
+        <div class="call-controls">
+          <button onclick="iniciarChamada(true)">📹 Vídeo</button>
+          <button onclick="iniciarChamada(false)">📞 Voz</button>
+          <button onclick="desligarChamada()" class="btn-danger">❌ Desligar</button>
+        </div>
+      </header>
+
+      <div class="video-container">
+        <video id="localVideo" autoplay playsinline muted></video>
+      </div>
+
+      <div id="chat-box" class="chat-box"></div>
+
+      <footer class="chat-footer">
+        <input type="text" id="input-msg" placeholder="Digite sua mensagem...">
+        <button onclick="enviarMensagemTexto()">Enviar</button>
+        <button onmousedown="iniciarGravacaoAudio()" onmouseup="pararGravacaoAudio()" class="btn-mic">🎤 Áudio</button>
+      </footer>
+    </main>
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
