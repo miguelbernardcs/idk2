@@ -9,7 +9,7 @@
 <body>
 
     <!-- Tela de Nome -->
-    <div id="telaNome" class="tela">
+    <div id="telaNome" class="tela-login">
         <div class="card-login">
             <div class="logo">💬</div>
             <h1 id="tituloChat">Chat</h1>
@@ -21,7 +21,7 @@
     </div>
 
     <!-- Tela de Criar Senha -->
-    <div id="telaCriarSenha" class="tela oculto">
+    <div id="telaCriarSenha" class="tela-login oculto">
         <div class="card-login">
             <div class="logo">🔐</div>
             <h1>Criar Senha</h1>
@@ -34,7 +34,7 @@
     </div>
 
     <!-- Tela de Digitar Senha -->
-    <div id="telaSenha" class="tela oculto">
+    <div id="telaSenha" class="tela-login oculto">
         <div class="card-login">
             <div class="logo">🔒</div>
             <h1>Senha</h1>
@@ -45,56 +45,62 @@
         </div>
     </div>
 
-    <!-- Tela de Grupos -->
-    <div id="telaGrupos" class="tela oculto">
-        <div class="card-login">
-            <div class="logo">👥</div>
-            <h1>Escolha um grupo</h1>
-            <p class="subtitulo">Onde quer conversar?</p>
-            <div id="listaGrupos" class="lista-grupos"></div>
-        </div>
-    </div>
-
-    <!-- Tela do Chat -->
-    <div id="telaChat" class="tela oculto">
-        <header class="header">
-            <div class="header-info">
-                <span class="status-dot"></span>
-                <h2 id="tituloChatHeader">Chat</h2>
-            </div>
-            <div class="header-acoes">
-                <button class="btn-icon" onclick="abrirAmigos()" title="Amigos">👤➕</button>
-                <button class="btn-icon" onclick="mudarGrupo()" title="Mudar grupo">👥</button>
+    <!-- Layout Estilo WhatsApp / Discord (App Principal) -->
+    <div id="appContainer" class="app-container oculto">
+        
+        <!-- Barra Lateral Esquerda -->
+        <aside class="sidebar">
+            <header class="sidebar-header">
                 <span id="meuNome" class="meu-nome"></span>
-            </div>
-        </header>
+                <button class="btn-icon" onclick="abrirAmigos()" title="Amigos">👤➕</button>
+            </header>
 
-        <!-- Painel de Amigos -->
-        <div id="painelAmigos" class="painel-amigos oculto">
-            <div class="painel-conteudo">
-                <h3>Meus Amigos</h3>
-                <div id="listaAmigos" class="lista-amigos"></div>
-                <div class="add-amigo">
-                    <input type="text" id="inputAmigo" placeholder="Nome do amigo" maxlength="20">
-                    <button class="btn-primario" onclick="adicionarAmigo()">Adicionar</button>
+            <div class="sidebar-secao">
+                <h3>Canais / Grupos</h3>
+                <div id="listaGrupos" class="lista-grupos"></div>
+            </div>
+        </aside>
+
+        <!-- Área Principal da Conversa -->
+        <main class="chat-main">
+            
+            <header class="header">
+                <div class="header-info">
+                    <span class="status-dot"></span>
+                    <h2 id="tituloChatHeader">Selecione um grupo</h2>
                 </div>
-                <button class="btn-fechar" onclick="fecharAmigos()">✕ Fechar</button>
-            </div>
-        </div>
+            </header>
 
-        <main id="mensagens" class="mensagens">
-            <div class="msg-sistema" id="placeholder">
-                <span>👋</span>
-                <p>Bem-vindo! Suas mensagens aparecerão aqui.</p>
+            <!-- Painel de Amigos (Overlay) -->
+            <div id="painelAmigos" class="painel-amigos oculto">
+                <div class="painel-conteudo">
+                    <h3>Meus Amigos</h3>
+                    <div id="listaAmigos" class="lista-amigos"></div>
+                    <div class="add-amigo">
+                        <input type="text" id="inputAmigo" placeholder="Nome do amigo" maxlength="20">
+                        <button class="btn-primario" onclick="adicionarAmigo()">Adicionar</button>
+                    </div>
+                    <button class="btn-fechar" onclick="fecharAmigos()">✕ Fechar</button>
+                </div>
             </div>
+
+            <!-- Área de Mensagens -->
+            <section id="mensagens" class="mensagens">
+                <div class="msg-sistema" id="placeholder">
+                    <span>👋</span>
+                    <p>Bem-vindo! Escolha um grupo à esquerda para conversar.</p>
+                </div>
+            </section>
+
+            <!-- Rodapé de Envio -->
+            <footer class="footer">
+                <button class="btn-icon" onclick="document.getElementById('fileInput').click()" title="Enviar imagem">📷</button>
+                <input type="file" id="fileInput" accept="image/*" onchange="enviarImagem(this)" style="display:none">
+                <input type="text" id="entrada" placeholder="Digite sua mensagem..." maxlength="500">
+                <button class="btn-primario btn-enviar" onclick="enviar()">➤</button>
+            </footer>
+
         </main>
-
-        <footer class="footer">
-            <button class="btn-icon" onclick="document.getElementById('fileInput').click()" title="Enviar imagem">📷</button>
-            <input type="file" id="fileInput" accept="image/*" onchange="enviarImagem(this)" style="display:none">
-            <input type="text" id="entrada" placeholder="Digite sua mensagem..." maxlength="500">
-            <button class="btn-primario btn-enviar" onclick="enviar()">➤</button>
-        </footer>
     </div>
 
     <script type="module" src="script.js"></script>
