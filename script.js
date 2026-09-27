@@ -1,4 +1,4 @@
-// ===== CONFIGURAÇÃO DO FIREBASE (IMPORTS COMPATÍVEIS COM NAVEGADOR) =====
+// ===== CONFIGURAÇÃO DO FIREBASE =====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { 
     getDatabase, ref, push, onChildAdded, 
@@ -16,7 +16,7 @@ const firebaseConfig = {
     measurementId: "G-MQ374PRBNE"
 };
 
-// ⬇️ PERSONALIZE AQUI
+// ⬇️ CONFIGURAÇÕES DA APLICAÇÃO
 const NOME_DO_CHAT = "Meu Chat";
 const EMOJI = "💬";
 const GRUPOS = ["Geral", "Trabalho", "Estudos", "Família"];
@@ -92,7 +92,7 @@ function notificar(dados) {
     mostrarNotificacao(NOME_DO_CHAT, corpo);
 }
 
-// ===== 1º PASSO: NOME =====
+// ===== AUTENTICAÇÃO =====
 async function confirmarNome() {
     const nomeInput = document.getElementById("inputNome").value.trim();
     const erro = document.getElementById("erroNome");
@@ -124,11 +124,6 @@ async function confirmarNome() {
     }
 }
 
-document.getElementById("inputNome").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") confirmarNome();
-});
-
-// ===== 2A: CRIAR SENHA =====
 async function criarSenha() {
     const nova = document.getElementById("inputNovaSenha").value;
     const confirmar = document.getElementById("inputConfirmarSenha").value;
@@ -151,14 +146,6 @@ async function criarSenha() {
     }
 }
 
-document.getElementById("inputNovaSenha").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") document.getElementById("inputConfirmarSenha").focus();
-});
-document.getElementById("inputConfirmarSenha").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") criarSenha();
-});
-
-// ===== 2B: DIGITAR SENHA =====
 async function confirmarSenha() {
     const digitada = document.getElementById("inputSenha").value;
     const erro = document.getElementById("erroSenha");
@@ -179,11 +166,12 @@ async function confirmarSenha() {
     }
 }
 
-document.getElementById("inputSenha").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") confirmarSenha();
-});
+document.getElementById("inputNome").addEventListener("keydown", (e) => { if (e.key === "Enter") confirmarNome(); });
+document.getElementById("inputNovaSenha").addEventListener("keydown", (e) => { if (e.key === "Enter") document.getElementById("inputConfirmarSenha").focus(); });
+document.getElementById("inputConfirmarSenha").addEventListener("keydown", (e) => { if (e.key === "Enter") criarSenha(); });
+document.getElementById("inputSenha").addEventListener("keydown", (e) => { if (e.key === "Enter") confirmarSenha(); });
 
-// ===== 3º PASSO: ENTRAR NO LAYOUT DE DUAS COLUNAS =====
+// ===== NAVEGAÇÃO / GRUPOS =====
 function mostrarGrupos() {
     $criarSenha.classList.add("oculto");
     $senha.classList.add("oculto");
@@ -191,7 +179,6 @@ function mostrarGrupos() {
     document.getElementById("meuNome").textContent = nome;
     renderizarGrupos();
     
-    // Entra automaticamente no primeiro grupo da lista
     if (GRUPOS.length > 0) {
         entrarNoGrupo(GRUPOS[0]);
     }
@@ -213,7 +200,6 @@ function entrarNoGrupo(grupo) {
     grupoAtual = grupo;
     document.getElementById("tituloChatHeader").textContent = grupo;
 
-    // Destaca o botão do grupo ativo
     document.querySelectorAll(".btn-grupo").forEach(btn => {
         btn.classList.toggle("ativo", btn.textContent === grupo);
     });
@@ -224,7 +210,7 @@ function entrarNoGrupo(grupo) {
     carregarAmigos();
 }
 
-// ===== AMIGOS =====
+// ===== AMIGOS (COM VALIDAÇÃO DE CONTA EXISTENTE) =====
 function carregarAmigos() {
     if (unsubAmigos) unsubAmigos();
     const meuAmigosRef = child(amigosRef, nome);
@@ -264,13 +250,28 @@ function fecharAmigos() {
 async function adicionarAmigo() {
     const nomeAmigo = document.getElementById("inputAmigo").value.trim();
     if (!nomeAmigo) return;
+
     if (nomeAmigo === nome) {
-        alert("Não pode adicionar a si mesmo.");
+        alert("Você não pode adicionar a si mesmo.");
         return;
     }
-    const meuAmigosRef = child(amigosRef, nome);
-    await update(meuAmigosRef, { [nomeAmigo]: true });
-    document.getElementById("inputAmigo").value = "";
+
+    try {
+        const snapshot = await get(child(usuariosRef, nomeAmigo));
+
+        if (!snapshot.exists()) {
+            alert("Este usuário não existe!");
+            return;
+        }
+
+        const meuAmigosRef = child(amigosRef, nome);
+        await update(meuAmigosRef, { [nomeAmigo]: true });
+        document.getElementById("inputAmigo").value = "";
+
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao verificar o usuário. Tente novamente.");
+    }
 }
 
 async function removerAmigo(nomeAmigo) {
@@ -291,7 +292,6 @@ function iniciarChat() {
     </div>`;
     recebendoHistorico = true;
 
-    // Filtra no Firebase apenas as mensagens pertencentes ao grupo atual
     const mensagensGrupoQuery = query(messagesRef, orderByChild("grupo"), equalTo(grupoAtual));
 
     unsubChat = onChildAdded(mensagensGrupoQuery, (snapshot) => {
@@ -370,7 +370,7 @@ $entrada.addEventListener("keydown", (e) => {
     if (e.key === "Enter") enviar();
 });
 
-// ===== EXPORTAR PARA O ESCOPO GLOBAL (HTML ONCLICK) =====
+// ===== EXPORTAR PARA O HTML (ONCLICK) =====
 window.confirmarNome = confirmarNome;
 window.criarSenha = criarSenha;
 window.confirmarSenha = confirmarSenha;
