@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { 
     getDatabase, ref, push, onChildAdded, 
-    get, set, child, update, onValue, query, orderByChild, equalTo 
+    get, set, child, update, onValue, query, orderByChild, equalTo, remove 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -19,7 +19,7 @@ const firebaseConfig = {
 // ⬇️ PERSONALIZAÇÃO
 const NOME_DO_CHAT = "Meu Chat";
 const EMOJI = "💬";
-const GRUPOS = ["Geral", "Trabalho", "Estudos", "Família"];
+let GRUPOS = ["Geral", "Trabalho", "Estudos", "Família"];
 
 // ===== APLICAR PERSONALIZAÇÃO =====
 document.getElementById("tituloChat").textContent = NOME_DO_CHAT;
@@ -32,13 +32,13 @@ let grupoAtual = "";
 let recebendoHistorico = true;
 let meusAmigos = [];
 let mensagensNaoLidas = {};
-let db, messagesRef, usuariosRef, amigosRef;
+let db, messagesRef, usuariosRef, amigosRef, canaisRef, presencaRef;
 let unsubChat = null;
 let unsubAmigos = null;
 let unsubGlobalNotif = null;
 
 // ===== ELEMENTOS =====
-const $nome        = document.getElementById("telaNome");
+const $nome         = document.getElementById("telaNome");
 const $criarSenha = document.getElementById("telaCriarSenha");
 const $senha      = document.getElementById("telaSenha");
 const $appContainer = document.getElementById("appContainer");
@@ -52,6 +52,18 @@ db = getDatabase(app);
 messagesRef = ref(db, "messages");
 usuariosRef = ref(db, "usuarios");
 amigosRef = ref(db, "amigos");
+canaisRef = ref(db, "canais");
+presencaRef = ref(db, "presenca");
+
+// ===== MENU LATERAL (TRÊS BARRINHAS PARA TELEMÓVEL) =====
+window.toggleSidebar = function() {
+    document.querySelector(".sidebar").classList.toggle("ativa");
+};
+
+// ===== MUDAR TEMA (ESCURO / CLARO) =====
+window.alternarTema = function() {
+    document.body.classList.toggle("light-theme");
+};
 
 // ===== NOTIFICAÇÕES =====
 function pedirPermissaoNotificacao() {
@@ -104,7 +116,7 @@ function iniciarOuvinteGlobal() {
         
         if (dados.nome && dados.nome.toLowerCase() !== nome && dados.grupo !== grupoAtual) {
             mensagensNaoLidas[dados.grupo] = true;
-            renderizarGrupos();
+            carregarCanaisDinâmicos();
         }
         
         notificar(dados);
@@ -190,50 +202,89 @@ document.getElementById("inputNovaSenha").addEventListener("keydown", (e) => { i
 document.getElementById("inputConfirmarSenha").addEventListener("keydown", (e) => { if (e.key === "Enter") criarSenha(); });
 document.getElementById("inputSenha").addEventListener("keydown", (e) => { if (e.key === "Enter") confirmarSenha(); });
 
-// ===== NAVEGAÇÃO / GRUPOS =====
+// ===== NAVEGAÇÃO / CANAIS DINÂMICOS =====
 function mostrarGrupos() {
     $criarSenha.classList.add("oculto");
     $senha.classList.add("oculto");
     $appContainer.classList.remove("oculto");
     document.getElementById("meuNome").textContent = nome;
-    renderizarGrupos();
     
-    if (GRUPOS.length > 0) {
-        entrarNoGrupo(GRUPOS[0]);
-    }
+    carregarCanaisDinâmicos();
+    iniciarPresenca();
     iniciarOuvinteGlobal();
 }
 
-function renderizarGrupos() {
+function carregarCanaisDinâmicos() {
+    onValue(canaisRef, (snapshot) => {
+        const customCanais = snapshot.val() ? Object.keys(snapshot.val()) : [];
+        const todosCanais = [...new Set([...GRUPOS, ...customCanais])];
+        renderizarListaCanais(todosCanais);
+        if (!grupoAtual && todosCanais.length > 0) {
+            entrarNoGrupo(todosCanais[0]);
+        }
+    });
+}
+
+function renderizarListaCanais(canais) {
     const lista = document.getElementById("listaGrupos");
+    if (!lista) return;
     lista.innerHTML = "";
-    GRUPOS.forEach((g) => {
+    canais.forEach((g) => {
         const btn = document.createElement("button");
         btn.className = "btn-grupo";
         if (g === grupoAtual) btn.classList.add("ativo");
         
-        let htmlTexto = `<span>${g}</span>`;
+        let htmlTexto = `<span># ${g}</span>`;
         if (mensagensNaoLidas[g] && g !== grupoAtual) {
             htmlTexto += `<span class="badge-novo">Novo</span>`;
         }
         
         btn.innerHTML = htmlTexto;
-        btn.onclick = () => entrarNoGrupo(g);
+        btn.onclick = () => {
+            entrarNoGrupo(g);
+            if (window.innerWidth <= 768) toggleSidebar();
+        };
         lista.appendChild(btn);
     });
 }
 
+window.abrirCriarCanal = async function() {
+    const nomeNovo = prompt("Nome do novo canal:");
+    if (!nomeNovo) return;
+    const formatado = nomeNovo.trim().toLowerCase().replace(/\s+/g, '-');
+    await set(child(canaisRef, formatado), true);
+};
+
 function entrarNoGrupo(grupo) {
     grupoAtual = grupo;
-    document.getElementById("tituloChatHeader").textContent = grupo;
+    document.getElementById("tituloChatHeader").textContent = `# ${grupo}`;
     
     mensagensNaoLidas[grupo] = false;
-    renderizarGrupos();
+    carregarCanaisDinâmicos();
 
     $entrada.focus();
     pedirPermissaoNotificacao();
     iniciarChat();
     carregarAmigos();
+}
+
+// ===== PRESENÇA (UTILIZADORES ONLINE) =====
+function iniciarPresenca() {
+    const meuPresencaRef = child(presencaRef, nome);
+    set(meuPresencaRef, true);
+    
+    onValue(presencaRef, (snapshot) => {
+        const online = snapshot.val() ? Object.keys(snapshot.val()) : [];
+        const listaOnline = document.getElementById("listaOnline");
+        if (!listaOnline) return;
+        listaOnline.innerHTML = "";
+        online.forEach(u => {
+            const div = document.createElement("div");
+            div.className = "usuario-online-item";
+            div.innerHTML = `<div class="ponto-verde"></div><span>${u}</span>`;
+            listaOnline.appendChild(div);
+        });
+    });
 }
 
 // ===== AMIGOS =====
@@ -249,6 +300,7 @@ function carregarAmigos() {
 
 function renderizarListaAmigos() {
     const lista = document.getElementById("listaAmigos");
+    if (!lista) return;
     lista.innerHTML = "";
     if (meusAmigos.length === 0) {
         lista.innerHTML = `<p style="color:var(--texto-suave);font-size:0.85rem;">Nenhum amigo ainda.</p>`;
@@ -263,17 +315,17 @@ function renderizarListaAmigos() {
     });
 }
 
-function abrirAmigos() {
+window.abrirAmigos = function() {
     $painelAmigos.classList.remove("oculto");
     carregarAmigos();
 }
 
-function fecharAmigos() {
+window.fecharAmigos = function() {
     $painelAmigos.classList.add("oculto");
     if (unsubAmigos) { unsubAmigos(); unsubAmigos = null; }
 }
 
-async function adicionarAmigo() {
+window.adicionarAmigo = async function() {
     const inputEl = document.getElementById("inputAmigo");
     const nomeAmigoInput = inputEl.value.trim();
     if (!nomeAmigoInput) return;
@@ -303,12 +355,12 @@ async function adicionarAmigo() {
     }
 }
 
-async function removerAmigo(nomeAmigo) {
+window.removerAmigo = async function(nomeAmigo) {
     const meuAmigosRef = child(amigosRef, nome);
     await update(meuAmigosRef, { [nomeAmigo]: null });
 }
 
-document.getElementById("inputAmigo").addEventListener("keydown", (e) => {
+document.getElementById("inputAmigo")?.addEventListener("keydown", (e) => {
     if (e.key === "Enter") adicionarAmigo();
 });
 
@@ -317,15 +369,14 @@ function iniciarChat() {
     if (unsubChat) unsubChat();
 
     $msgs.innerHTML = `<div class="msg-sistema" id="placeholder">
-        <span>👋</span><p>Bem-vindo ao grupo ${escapeHtml(grupoAtual)}!</p>
+        <span>👋</span><p>Bem-vindo ao canal #${escapeHtml(grupoAtual)}!</p>
     </div>`;
     recebendoHistorico = true;
 
     const mensagensGrupoQuery = query(messagesRef, orderByChild("grupo"), equalTo(grupoAtual));
 
     unsubChat = onChildAdded(mensagensGrupoQuery, (snapshot) => {
-        const dados = snapshot.val();
-        renderizarMensagem(dados);
+        renderizarMensagem(snapshot.key, snapshot.val());
     });
 }
 
@@ -338,9 +389,11 @@ function formatarHora(timestamp) {
     return `${horas}:${minutos}`;
 }
 
-function renderizarMensagem(dados) {
+function renderizarMensagem(idMsg, dados) {
     const placeholder = document.getElementById("placeholder");
     if (placeholder) placeholder.remove();
+
+    if (document.getElementById(`msg-${idMsg}`)) return;
 
     const div = document.createElement("div");
     const autorMin = dados.nome ? dados.nome.toLowerCase() : "";
@@ -349,22 +402,24 @@ function renderizarMensagem(dados) {
     const nomeEscapado = escapeHtml(dados.nome);
     const inicial = dados.nome ? dados.nome.charAt(0).toUpperCase() : "?";
     const horaFormatada = formatarHora(dados.timestamp);
+    const ehMinha = autorMin === nome;
 
-    // Estrutura do cabeçalho com a bolinha de avatar (inicial)
+    div.className = `msg ${ehMinha ? "msg-propria" : "msg-outra"}`;
+    div.id = `msg-${idMsg}`;
+
     const cabecalhoHtml = `
         <div class="msg-cabecalho">
             <div class="msg-avatar">${inicial}</div>
             <div class="msg-autor">${nomeEscapado}${badge}</div>
+            ${ehMinha ? `<button class="btn-apagar" onclick="apagarMensagem('${idMsg}')" title="Apagar">🗑️</button>` : ''}
         </div>
     `;
 
     if (dados.tipo === "imagem") {
-        div.className = `msg ${autorMin === nome ? "msg-propria" : "msg-outra"}`;
         div.innerHTML = `${cabecalhoHtml}
                          <img class="msg-img" src="${escapeHtml(dados.base64)}" alt="imagem">
                          <div class="msg-hora">${horaFormatada}</div>`;
     } else if (dados.tipo === "texto") {
-        div.className = `msg ${autorMin === nome ? "msg-propria" : "msg-outra"}`;
         div.innerHTML = `${cabecalhoHtml}
                          <div class="msg-texto">${escapeHtml(dados.texto)}</div>
                          <div class="msg-hora">${horaFormatada}</div>`;
@@ -382,6 +437,17 @@ function renderizarMensagem(dados) {
     }
 }
 
+window.apagarMensagem = async function(idMsg) {
+    if (confirm("Tens a certeza que pretendes apagar esta mensagem?")) {
+        try {
+            await remove(child(messagesRef, idMsg));
+            document.getElementById(`msg-${idMsg}`)?.remove();
+        } catch (e) {
+            alert("Erro ao apagar mensagem.");
+        }
+    }
+};
+
 function escapeHtml(texto) {
     if (!texto) return "";
     const div = document.createElement("div");
@@ -390,7 +456,7 @@ function escapeHtml(texto) {
 }
 
 // ===== ENVIAR =====
-function enviar() {
+window.enviar = function() {
     const texto = $entrada.value.trim();
     if (!texto || !grupoAtual) return;
     push(messagesRef, {
@@ -401,7 +467,7 @@ function enviar() {
     $entrada.value = "";
 }
 
-function enviarImagem(inputEl) {
+window.enviarImagem = function(inputEl) {
     const file = inputEl.files[0];
     if (!file || !grupoAtual) return;
     const reader = new FileReader();
