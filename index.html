@@ -106,6 +106,22 @@
 
     </div>
 
+    <!-- ===== MODAL PERSONALIZADO (SUBSTITUI PROMPT / ALERT) ===== -->
+    <div id="modalCustomizado" class="tela-login oculto" style="background: rgba(0,0,0,0.7);">
+        <div class="card-login" style="width: 380px;">
+            <div class="logo" id="modalIcone">💬</div>
+            <h2 id="modalTitulo" style="font-size: 1.3rem; margin-bottom: 8px;">Título</h2>
+            <p class="subtitulo" id="modalMensagem" style="margin-bottom: 16px;">Mensagem...</p>
+            
+            <input type="text" id="modalInput" class="oculto" placeholder="Digite aqui..." autocomplete="off">
+            
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button id="modalBtnCancelar" class="btn-fechar oculto" onclick="fecharModalCustomizado(false)">Cancelar</button>
+                <button id="modalBtnConfirmar" class="btn-primario" onclick="fecharModalCustomizado(true)">OK</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="script.js"></script>
 </body>
 </html>
