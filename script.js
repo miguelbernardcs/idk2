@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { 
     getDatabase, ref, push, onChildAdded, 
-    get, set, child, update, onValue, query, orderByChild, equalTo, remove 
+    get, set, child, update, onValue, query, orderByChild, equalTo, remove, onDisconnect 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -287,20 +287,30 @@ function entrarNoGrupo(grupo) {
     carregarAmigos();
 }
 
-// ===== PRESENÇA =====
+// ===== PRESENÇA AUTOMÁTICA (ONLINE / OFFLINE) =====
 function iniciarPresenca() {
     const meuPresencaRef = child(presencaRef, nome);
-    set(meuPresencaRef, true);
+    
+    // Define como online e configura remoção/atualização automática ao fechar a aba
+    set(meuPresencaRef, "online");
+    onDisconnect(meuPresencaRef).set("offline");
     
     onValue(presencaRef, (snapshot) => {
-        const online = snapshot.val() ? Object.keys(snapshot.val()) : [];
+        const dados = snapshot.val() || {};
         const listaOnline = document.getElementById("listaOnline");
         if (!listaOnline) return;
         listaOnline.innerHTML = "";
-        online.forEach(u => {
+        
+        Object.keys(dados).forEach(u => {
+            const status = dados[u];
             const div = document.createElement("div");
             div.className = "usuario-online-item";
-            div.innerHTML = `<div class="ponto-verde"></div><span>${u}</span>`;
+            
+            if (status === "online") {
+                div.innerHTML = `<div class="ponto-verde"></div><span>${u}</span>`;
+            } else {
+                div.innerHTML = `<div class="ponto-vermelho"></div><span>${u} (offline)</span>`;
+            }
             listaOnline.appendChild(div);
         });
     });
