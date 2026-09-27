@@ -31,9 +31,11 @@ let nome = "";
 let grupoAtual = "";
 let recebendoHistorico = true;
 let meusAmigos = [];
+let mensagensNaoLidas = {};
 let db, messagesRef, usuariosRef, amigosRef;
 let unsubChat = null;
 let unsubAmigos = null;
+let unsubGlobalNotif = null;
 
 // ===== ELEMENTOS =====
 const $nome        = document.getElementById("telaNome");
@@ -87,12 +89,29 @@ function notificar(dados) {
     }
     tocarSom();
     const corpo = dados.tipo === "imagem"
-        ? `${dados.nome} enviou uma imagem`
-        : `${dados.nome}: ${dados.texto}`;
+        ? `${dados.nome} enviou uma imagem no grupo ${dados.grupo}`
+        : `${dados.nome} (${dados.grupo}): ${dados.texto}`;
     mostrarNotificacao(NOME_DO_CHAT, corpo);
 }
 
-// ===== AUTENTICAÇÃO (PADRONIZADA EM MINÚSCULAS) =====
+// ===== MONITORAR MENSAGENS GLOBAIS (INDICADOR DE NÃO LIDAS) =====
+function iniciarOuvinteGlobal() {
+    if (unsubGlobalNotif) unsubGlobalNotif();
+    
+    unsubGlobalNotif = onChildAdded(messagesRef, (snapshot) => {
+        const dados = snapshot.val();
+        if (!dados || !dados.grupo) return;
+        
+        if (dados.nome && dados.nome.toLowerCase() !== nome && dados.grupo !== grupoAtual) {
+            mensagensNaoLidas[dados.grupo] = true;
+            renderizarGrupos();
+        }
+        
+        notificar(dados);
+    });
+}
+
+// ===== AUTENTICAÇÃO =====
 async function confirmarNome() {
     const nomeInput = document.getElementById("inputNome").value.trim();
     const erro = document.getElementById("erroNome");
@@ -102,7 +121,6 @@ async function confirmarNome() {
         return;
     }
 
-    // Padroniza internamente tudo em minúsculas
     nome = nomeInput.toLowerCase();
 
     try {
@@ -183,6 +201,7 @@ function mostrarGrupos() {
     if (GRUPOS.length > 0) {
         entrarNoGrupo(GRUPOS[0]);
     }
+    iniciarOuvinteGlobal();
 }
 
 function renderizarGrupos() {
@@ -191,7 +210,14 @@ function renderizarGrupos() {
     GRUPOS.forEach((g) => {
         const btn = document.createElement("button");
         btn.className = "btn-grupo";
-        btn.textContent = g;
+        if (g === grupoAtual) btn.classList.add("ativo");
+        
+        let htmlTexto = `<span>${g}</span>`;
+        if (mensagensNaoLidas[g] && g !== grupoAtual) {
+            htmlTexto += `<span class="badge-novo">Novo</span>`;
+        }
+        
+        btn.innerHTML = htmlTexto;
         btn.onclick = () => entrarNoGrupo(g);
         lista.appendChild(btn);
     });
@@ -200,10 +226,9 @@ function renderizarGrupos() {
 function entrarNoGrupo(grupo) {
     grupoAtual = grupo;
     document.getElementById("tituloChatHeader").textContent = grupo;
-
-    document.querySelectorAll(".btn-grupo").forEach(btn => {
-        btn.classList.toggle("ativo", btn.textContent === grupo);
-    });
+    
+    mensagensNaoLidas[grupo] = false;
+    renderizarGrupos();
 
     $entrada.focus();
     pedirPermissaoNotificacao();
@@ -301,8 +326,16 @@ function iniciarChat() {
     unsubChat = onChildAdded(mensagensGrupoQuery, (snapshot) => {
         const dados = snapshot.val();
         renderizarMensagem(dados);
-        notificar(dados);
     });
+}
+
+// Formatar timestamp para hora (ex: 14:30)
+function formatarHora(timestamp) {
+    if (!timestamp) return "";
+    const data = new Date(timestamp);
+    const horas = String(data.getHours()).padStart(2, '0');
+    const minutos = String(data.getMinutes()).padStart(2, '0');
+    return `${horas}:${minutos}`;
 }
 
 function renderizarMensagem(dados) {
@@ -314,15 +347,27 @@ function renderizarMensagem(dados) {
     const ehAmigo = meusAmigos.includes(autorMin);
     const badge = ehAmigo ? `<span class="amigo-badge">⭐</span>` : "";
     const nomeEscapado = escapeHtml(dados.nome);
+    const inicial = dados.nome ? dados.nome.charAt(0).toUpperCase() : "?";
+    const horaFormatada = formatarHora(dados.timestamp);
+
+    // Estrutura do cabeçalho com a bolinha de avatar (inicial)
+    const cabecalhoHtml = `
+        <div class="msg-cabecalho">
+            <div class="msg-avatar">${inicial}</div>
+            <div class="msg-autor">${nomeEscapado}${badge}</div>
+        </div>
+    `;
 
     if (dados.tipo === "imagem") {
         div.className = `msg ${autorMin === nome ? "msg-propria" : "msg-outra"}`;
-        div.innerHTML = `<div class="msg-autor">${nomeEscapado}${badge}</div>
-                         <img class="msg-img" src="${escapeHtml(dados.base64)}" alt="imagem">`;
+        div.innerHTML = `${cabecalhoHtml}
+                         <img class="msg-img" src="${escapeHtml(dados.base64)}" alt="imagem">
+                         <div class="msg-hora">${horaFormatada}</div>`;
     } else if (dados.tipo === "texto") {
         div.className = `msg ${autorMin === nome ? "msg-propria" : "msg-outra"}`;
-        div.innerHTML = `<div class="msg-autor">${nomeEscapado}${badge}</div>
-                         <div class="msg-texto">${escapeHtml(dados.texto)}</div>`;
+        div.innerHTML = `${cabecalhoHtml}
+                         <div class="msg-texto">${escapeHtml(dados.texto)}</div>
+                         <div class="msg-hora">${horaFormatada}</div>`;
     } else {
         div.className = "msg-sistema";
         div.textContent = dados;
