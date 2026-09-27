@@ -45,18 +45,13 @@
         </div>
     </div>
 
-    <!-- Tela de Lista de Conversas (Estilo WhatsApp) -->
+    <!-- Tela de Grupos -->
     <div id="telaGrupos" class="tela oculto">
-        <div class="card-login card-conversas">
-            <div class="header-conversas">
-                <div class="logo">💬</div>
-                <h1>Conversas</h1>
-            </div>
-            <p class="subtitulo">Escolha uma conversa ou crie um grupo</p>
-
+        <div class="card-login">
+            <div class="logo">👥</div>
+            <h1>Escolha um grupo</h1>
+            <p class="subtitulo">Onde quer conversar?</p>
             <div id="listaGrupos" class="lista-grupos"></div>
-            
-            <button class="btn-primario btn-criar-grupo" onclick="criarNovoGrupo()">+ Novo Grupo Privado</button>
         </div>
     </div>
 
@@ -68,34 +63,11 @@
                 <h2 id="tituloChatHeader">Chat</h2>
             </div>
             <div class="header-acoes">
-                <button class="btn-icon" onclick="iniciarChamada(true)" title="Chamada de Vídeo">📹</button>
-                <button class="btn-icon" onclick="desligarChamada()" title="Desligar Chamada">❌</button>
-                <button id="btnGerenciarGrupo" class="btn-icon oculto" onclick="abrirGerenciadorGrupo()" title="Gerenciar Membros (ADM)">⚙️</button>
                 <button class="btn-icon" onclick="abrirAmigos()" title="Amigos">👤➕</button>
-                <button class="btn-icon" onclick="mudarGrupo()" title="Voltar para Conversas">👥</button>
-                <span id="meuNome" class="meu-nome" onclick="alterarNomePerfil()" style="cursor:pointer;" title="Clique para mudar de nome"></span>
-                <button class="btn-icon" onclick="excluirMinhaConta()" title="Excluir Conta" style="color:#ff6b6b;">🗑️</button>
+                <button class="btn-icon" onclick="mudarGrupo()" title="Mudar grupo">👥</button>
+                <span id="meuNome" class="meu-nome"></span>
             </div>
         </header>
-
-        <!-- Container de Vídeo WebRTC -->
-        <div id="containerVideo" class="container-video oculto">
-            <video id="remoteVideo" autoplay playsinline></video>
-            <video id="localVideo" autoplay playsinline muted></video>
-        </div>
-
-        <!-- Painel de ADM do Grupo -->
-        <div id="painelGrupo" class="painel-amigos oculto">
-            <div class="painel-conteudo">
-                <h3>👑 Painel de ADM do Grupo</h3>
-                <div id="listaMembrosGrupo" class="lista-amigos"></div>
-                <div class="add-amigo">
-                    <input type="text" id="inputNovoMembro" placeholder="Nome do usuário">
-                    <button class="btn-primario" onclick="adicionarMembro()">Adicionar Membro</button>
-                </div>
-                <button class="btn-fechar" onclick="fecharGerenciadorGrupo()">✕ Fechar</button>
-            </div>
-        </div>
 
         <!-- Painel de Amigos -->
         <div id="painelAmigos" class="painel-amigos oculto">
@@ -120,9 +92,6 @@
         <footer class="footer">
             <button class="btn-icon" onclick="document.getElementById('fileInput').click()" title="Enviar imagem">📷</button>
             <input type="file" id="fileInput" accept="image/*" onchange="enviarImagem(this)" style="display:none">
-            
-            <button class="btn-icon" onmousedown="iniciarGravacaoAudio()" onmouseup="pararGravacaoAudio()" title="Segure para gravar áudio">🎤</button>
-
             <input type="text" id="entrada" placeholder="Digite sua mensagem..." maxlength="500">
             <button class="btn-primario btn-enviar" onclick="enviar()">➤</button>
         </footer>
@@ -130,5 +99,4 @@
 
     <script type="module" src="script.js"></script>
 </body>
-                  </html>
-                  
+</html>
