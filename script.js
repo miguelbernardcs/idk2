@@ -24,7 +24,7 @@ document.getElementById("tituloChat").textContent = NOME_DO_CHAT;
 document.querySelector(".logo").textContent = EMOJI;
 document.title = NOME_DO_CHAT;
 
-let nome = "";
+let nome = localStorage.getItem("chat_usuario") || "";
 let grupoAtual = "";
 let recebendoHistorico = true;
 let meusAmigos = [];
@@ -49,6 +49,23 @@ usuariosRef = ref(db, "usuarios");
 amigosRef = ref(db, "amigos");
 canaisRef = ref(db, "canais");
 presencaRef = ref(db, "presenca");
+
+// ===== VERIFICAÇÃO DE SESSÃO AUTOMÁTICA =====
+window.addEventListener("DOMContentLoaded", async () => {
+    if (nome) {
+        try {
+            const snapshot = await get(child(usuariosRef, nome));
+            if (snapshot.exists()) {
+                mostrarGrupos();
+            } else {
+                localStorage.removeItem("chat_usuario");
+                nome = "";
+            }
+        } catch (e) {
+            mostrarGrupos();
+        }
+    }
+});
 
 // ===== MODAIS PERSONALIZADOS =====
 let modalCallback = null;
@@ -100,6 +117,99 @@ window.fecharModalCustomizado = function(resultado) {
     }
 };
 
+// ===== MENU DE GESTÃO DE CONTA (MUDAR NOME / DELETAR) =====
+window.abrirMenuConta = async function() {
+    const acao = await abrirModalPersonalizado({
+        icone: "⚙️",
+        titulo: "Gerir Conta",
+        mensagem: `O que pretendes fazer na conta de @${nome}?`,
+        tipo: "confirm"
+    });
+
+    // Usamos o modal de confirmação como base, mas vamos perguntar especificamente
+    // Para simplificar, abrimos prompts customizados em sequência se o utilizador quiser
+};
+
+// Substituímos por funções diretas limpas no clique do nome:
+window.abrirMenuConta = async function() {
+    const escolha = await abrirModalPersonalizado({
+        icone: "⚙️",
+        titulo: "Opções de Conta",
+        mensagem: "Escolhe uma opção:\n1. Digita 'Mudar' para alterar o teu nome\n2. Digita 'Deletar' para apagar a tua conta",
+        tipo: "prompt",
+        placeholder: "Mudar ou Deletar"
+    });
+
+    if (!escolha) return;
+    const op = escolha.trim().toLowerCase();
+
+    if (op === "mudar") {
+        const novoNomeInput = await abrirModalPersonalizado({
+            icone: "✏️",
+            titulo: "Mudar Nome de Utilizador",
+            mensagem: "Digite o novo nome pretendido:",
+            tipo: "prompt",
+            placeholder: "Novo nome..."
+        });
+
+        if (!novoNomeInput || !novoNomeInput.trim()) return;
+        const novoNome = novoNomeInput.trim().toLowerCase();
+
+        if (novoNome === nome) {
+            await abrirModalPersonalizado({ icone: "⚠️", titulo: "Aviso", mensagem: "Esse já é o teu nome atual.", tipo: "alert" });
+            return;
+        }
+
+        try {
+            // Verifica se o nome já está em uso
+            const snapshot = await get(child(usuariosRef, novoNome));
+            if (snapshot.exists()) {
+                await abrirModalPersonalizado({ icone: "❌", titulo: "Indisponível", mensagem: "Este nome já está em uso por outro utilizador!", tipo: "alert" });
+                return;
+            }
+
+            // Pega os dados atuais da senha
+            const dadosAtuais = (await get(child(usuariosRef, nome))).val();
+
+            // Salva no novo nome e apaga o antigo
+            await set(child(usuariosRef, novoNome), dadosAtuais);
+            await remove(child(usuariosRef, nome));
+            await remove(child(presencaRef, nome));
+
+            // Atualiza sessão local
+            nome = novoNome;
+            localStorage.setItem("chat_usuario", nome);
+            document.getElementById("meuNome").textContent = nome;
+            
+            await abrirModalPersonalizado({ icone: "✅", titulo: "Sucesso", mensagem: "Nome alterado com sucesso!", tipo: "alert" });
+            location.reload();
+        } catch (e) {
+            await abrirModalPersonalizado({ icone: "❌", titulo: "Erro", mensagem: "Erro ao atualizar o nome.", tipo: "alert" });
+        }
+
+    } else if (op === "deletar") {
+        const confirmarDel = await abrirModalPersonalizado({
+            icone: "⚠️",
+            titulo: "Eliminar Conta",
+            mensagem: "Tens a certeza absoluta? Esta ação apaga os teus dados de acesso permanentemente.",
+            tipo: "confirm"
+        });
+
+        if (confirmarDel) {
+            try {
+                await remove(child(usuariosRef, nome));
+                await remove(child(amigosRef, nome));
+                await remove(child(presencaRef, nome));
+                localStorage.removeItem("chat_usuario");
+                await abrirModalPersonalizado({ icone: "🗑️", titulo: "Conta Apagada", mensagem: "A tua conta foi eliminada.", tipo: "alert" });
+                location.reload();
+            } catch (e) {
+                await abrirModalPersonalizado({ icone: "❌", titulo: "Erro", mensagem: "Erro ao eliminar a conta.", tipo: "alert" });
+            }
+        }
+    }
+};
+
 // ===== MENU & TEMA =====
 window.toggleSidebar = function() {
     document.querySelector(".sidebar").classList.toggle("ativa");
@@ -107,6 +217,11 @@ window.toggleSidebar = function() {
 
 window.alternarTema = function() {
     document.body.classList.toggle("light-theme");
+};
+
+window.sairDaConta = function() {
+    localStorage.removeItem("chat_usuario");
+    location.reload();
 };
 
 // ===== NOTIFICAÇÕES =====
@@ -197,6 +312,7 @@ async function criarSenha() {
 
     try {
         await set(child(usuariosRef, nome), { senha: nova });
+        localStorage.setItem("chat_usuario", nome);
         mostrarGrupos();
     } catch (e) { erro.textContent = "Erro ao salvar."; }
 }
@@ -208,6 +324,7 @@ async function confirmarSenha() {
         const snapshot = await get(child(usuariosRef, nome));
         if (!snapshot.exists()) { erro.textContent = "Nome não encontrado."; return; }
         if (digitada === snapshot.val().senha) {
+            localStorage.setItem("chat_usuario", nome);
             mostrarGrupos();
         } else { erro.textContent = "Senha incorreta."; }
     } catch (e) { erro.textContent = "Erro."; }
@@ -220,10 +337,12 @@ document.getElementById("inputSenha").addEventListener("keydown", (e) => { if (e
 
 // ===== NAVEGAÇÃO / CANAIS =====
 function mostrarGrupos() {
+    $nome.classList.add("oculto");
     $criarSenha.classList.add("oculto");
     $senha.classList.add("oculto");
     $appContainer.classList.remove("oculto");
-    document.getElementById("meuNome").textContent = nome;
+    document.getElementById("meuNome").textContent = `${nome} ⚙️`;
+    document.getElementById("meuNome").title = "Gerir Conta";
     carregarCanaisDinâmicos();
     iniciarPresenca();
     iniciarOuvinteGlobal();
@@ -287,11 +406,9 @@ function entrarNoGrupo(grupo) {
     carregarAmigos();
 }
 
-// ===== PRESENÇA AUTOMÁTICA (ONLINE / OFFLINE) =====
+// ===== PRESENÇA AUTOMÁTICA =====
 function iniciarPresenca() {
     const meuPresencaRef = child(presencaRef, nome);
-    
-    // Define como online e configura remoção/atualização automática ao fechar a aba
     set(meuPresencaRef, "online");
     onDisconnect(meuPresencaRef).set("offline");
     
