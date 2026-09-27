@@ -25,6 +25,7 @@ document.title = NOME_DO_CHAT;
 
 let nome = "";
 let grupoAtual = "";
+let grupoAtualId = "";
 let meusAmigos = [];
 let db, messagesRef, usuariosRef, amigosRef, gruposRef, chamadasRef;
 let unsubChat = null;
@@ -61,13 +62,13 @@ async function inicializarGruposPadrao() {
     for (const g of padrao) {
         const snap = await get(child(gruposRef, g));
         if (!snap.exists()) {
-            await set(child(gruposRef, g), { nome: g, privado: false, adm: "Sistema" });
+            await set(child(gruposRef, g), { id: g, nome: g, privado: false, adm: "Sistema" });
         }
     }
 }
 inicializarGruposPadrao();
 
-// AUTENTICAÇÃO E PERFIL
+// ===== AUTENTICAÇÃO E PERFIL =====
 async function confirmarNome() {
     const nomeInput = document.getElementById("inputNome").value.trim();
     const erro = document.getElementById("erroNome");
@@ -137,7 +138,7 @@ async function excluirMinhaConta() {
     }
 }
 
-// GESTÃO DE GRUPOS PRIVADOS & ADM
+// ===== GESTÃO DE GRUPOS PRIVADOS & ADM =====
 function mostrarGrupos() {
     $criarSenha.classList.add("oculto");
     $senha.classList.add("oculto");
@@ -152,12 +153,14 @@ function renderizarGrupos() {
         const dados = snapshot.val() || {};
         Object.keys(dados).forEach((gId) => {
             const g = dados[gId];
+            if (!g || !g.nome) return;
+
             const ehMembro = g.membros && g.membros[nome];
             if (!g.privado || ehMembro || g.adm === nome) {
                 const btn = document.createElement("button");
                 btn.className = "btn-grupo";
                 btn.textContent = g.privado ? `🔒 ${g.nome}` : g.nome;
-                btn.onclick = () => entrarNoGrupo(g.nome);
+                btn.onclick = () => entrarNoGrupo(g.nome, gId);
                 lista.appendChild(btn);
             }
         });
@@ -168,27 +171,37 @@ async function criarNovoGrupo() {
     const nomeG = document.getElementById("inputNovoGrupo").value.trim();
     if (!nomeG) return;
 
-    await set(child(gruposRef, nomeG), {
-        nome: nomeG,
-        privado: true,
-        adm: nome,
-        membros: { [nome]: true }
-    });
+    // Gera um ID limpo de caracteres especiais para evitar travamento no Firebase
+    const grupoId = "grupo_" + Date.now();
 
-    document.getElementById("inputNovoGrupo").value = "";
-    entrarNoGrupo(nomeG);
+    try {
+        await set(child(gruposRef, grupoId), {
+            id: grupoId,
+            nome: nomeG,
+            privado: true,
+            adm: nome,
+            membros: { [nome]: true }
+        });
+
+        document.getElementById("inputNovoGrupo").value = "";
+        entrarNoGrupo(nomeG, grupoId);
+    } catch (e) {
+        alert("Erro ao criar grupo no banco de dados.");
+    }
 }
 
-async function entrarNoGrupo(grupo) {
-    grupoAtual = grupo;
+async function entrarNoGrupo(grupoNome, grupoId = null) {
+    grupoAtual = grupoNome;
+    grupoAtualId = grupoId || grupoNome;
+
     $grupos.classList.add("oculto");
     $chat.classList.remove("oculto");
-    document.getElementById("meuNome").textContent = `${nome} • ${grupo}`;
-    document.getElementById("tituloChatHeader").textContent = grupo;
+    document.getElementById("meuNome").textContent = `${nome} • ${grupoAtual}`;
+    document.getElementById("tituloChatHeader").textContent = grupoAtual;
     $entrada.focus();
 
     // Checar se o usuário é o ADM do grupo
-    const snap = await get(child(gruposRef, `${grupoAtual}/adm`));
+    const snap = await get(child(gruposRef, `${grupoAtualId}/adm`));
     const btnGerenciar = document.getElementById("btnGerenciarGrupo");
     if (snap.exists() && snap.val() === nome) {
         btnGerenciar.classList.remove("oculto");
@@ -207,7 +220,7 @@ function mudarGrupo() {
     renderizarGrupos();
 }
 
-// PAINEL DE ADM (MEMBROS DO GRUPO)
+// ===== PAINEL DE ADM (MEMBROS DO GRUPO) =====
 function abrirGerenciadorGrupo() {
     $painelGrupo.classList.remove("oculto");
     carregarMembrosGrupo();
@@ -217,7 +230,7 @@ function fecharGerenciadorGrupo() { $painelGrupo.classList.add("oculto"); }
 
 function carregarMembrosGrupo() {
     const lista = document.getElementById("listaMembrosGrupo");
-    onValue(child(gruposRef, `${grupoAtual}/membros`), (snap) => {
+    onValue(child(gruposRef, `${grupoAtualId}/membros`), (snap) => {
         lista.innerHTML = "";
         const membros = snap.val() || {};
         Object.keys(membros).forEach((m) => {
@@ -236,15 +249,15 @@ async function adicionarMembro() {
     const snap = await get(child(usuariosRef, novoM));
     if (!snap.exists()) return alert("Usuário não encontrado.");
 
-    await update(child(gruposRef, `${grupoAtual}/membros`), { [novoM]: true });
+    await update(child(gruposRef, `${grupoAtualId}/membros`), { [novoM]: true });
     document.getElementById("inputNovoMembro").value = "";
 }
 
 async function removerMembro(membro) {
-    await remove(child(gruposRef, `${grupoAtual}/membros/${membro}`));
+    await remove(child(gruposRef, `${grupoAtualId}/membros/${membro}`));
 }
 
-// AMIGOS
+// ===== AMIGOS =====
 function carregarAmigos() {
     if (unsubAmigos) unsubAmigos();
     unsubAmigos = onValue(child(amigosRef, nome), (snapshot) => {
@@ -282,7 +295,7 @@ async function removerAmigo(nomeAmigo) {
     await update(child(amigosRef, nome), { [nomeAmigo]: null });
 }
 
-// CHAT E MENSAGENS
+// ===== CHAT E MENSAGENS =====
 function iniciarChat() {
     if (unsubChat) unsubChat();
     $msgs.innerHTML = `<div class="msg-sistema" id="placeholder"><span>👋</span><p>Bem-vindo! Suas mensagens aparecerão aqui.</p></div>`;
@@ -339,7 +352,7 @@ function enviarImagem(inputEl) {
     inputEl.value = "";
 }
 
-// ÁUDIO E VÍDEOCHAMADA (WEBRTC)
+// ===== ÁUDIO E VÍDEOCHAMADA (WEBRTC) =====
 async function iniciarGravacaoAudio() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -366,7 +379,7 @@ function pararGravacaoAudio() {
 
 async function iniciarChamada(comVideo = true) {
     try {
-        const callRef = child(chamadasRef, grupoAtual);
+        const callRef = child(chamadasRef, grupoAtualId);
         await remove(callRef);
 
         localStream = await navigator.mediaDevices.getUserMedia({ video: comVideo, audio: true });
@@ -405,7 +418,7 @@ async function iniciarChamada(comVideo = true) {
 }
 
 function escutarChamadasEntrando() {
-    const callRef = child(chamadasRef, grupoAtual);
+    const callRef = child(chamadasRef, grupoAtualId);
     onValue(child(callRef, "offer"), async (snap) => {
         const data = snap.val();
         if (data && data.de !== nome && !peerConnection) {
@@ -417,7 +430,7 @@ function escutarChamadasEntrando() {
 
 async function atenderChamada(offerData) {
     try {
-        const callRef = child(chamadasRef, grupoAtual);
+        const callRef = child(chamadasRef, grupoAtualId);
         localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         remoteStream = new MediaStream();
 
@@ -448,7 +461,7 @@ async function atenderChamada(offerData) {
 }
 
 async function desligarChamada() {
-    await remove(child(chamadasRef, grupoAtual));
+    await remove(child(chamadasRef, grupoAtualId));
     desligarChamadaLocal();
 }
 
