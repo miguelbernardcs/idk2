@@ -299,3 +299,49 @@ body {
 .add-amigo { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .add-amigo input { padding: 8px 12px; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--bg-input); color: var(--texto); outline: none; }
 .btn-fechar { width: 100%; padding: 8px; border: 1px solid var(--borda); border-radius: var(--raio); background: none; color: var(--texto-suave); cursor: pointer; }
+/* Estilo do Horário (Timestamp) na mensagem */
+.msg-hora {
+    font-size: 0.65rem;
+    color: var(--texto-suave);
+    text-align: right;
+    margin-top: 2px;
+}
+
+/* Indicador de novas mensagens na barra lateral */
+.btn-grupo {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.badge-novo {
+    background-color: var(--cor-primaria);
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+/* Estilo do Avatar com Inicial */
+.msg-cabecalho {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.msg-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: var(--cor-primaria);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
