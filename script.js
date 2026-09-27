@@ -23,7 +23,6 @@ const GRUPOS = ["Geral", "Trabalho", "Estudos", "Família"];
 
 // ===== APLICAR PERSONALIZAÇÃO =====
 document.getElementById("tituloChat").textContent = NOME_DO_CHAT;
-document.getElementById("tituloChatHeader").textContent = NOME_DO_CHAT;
 document.querySelector(".logo").textContent = EMOJI;
 document.title = NOME_DO_CHAT;
 
@@ -40,8 +39,7 @@ let unsubAmigos = null;
 const $nome        = document.getElementById("telaNome");
 const $criarSenha = document.getElementById("telaCriarSenha");
 const $senha      = document.getElementById("telaSenha");
-const $grupos     = document.getElementById("telaGrupos");
-const $chat       = document.getElementById("telaChat");
+const $appContainer = document.getElementById("appContainer");
 const $msgs       = document.getElementById("mensagens");
 const $entrada    = document.getElementById("entrada");
 const $painelAmigos = document.getElementById("painelAmigos");
@@ -185,12 +183,18 @@ document.getElementById("inputSenha").addEventListener("keydown", (e) => {
     if (e.key === "Enter") confirmarSenha();
 });
 
-// ===== 3º PASSO: GRUPO =====
+// ===== 3º PASSO: ENTRAR NO LAYOUT DE DUAS COLUNAS =====
 function mostrarGrupos() {
     $criarSenha.classList.add("oculto");
     $senha.classList.add("oculto");
-    $grupos.classList.remove("oculto");
+    $appContainer.classList.remove("oculto");
+    document.getElementById("meuNome").textContent = nome;
     renderizarGrupos();
+    
+    // Entra automaticamente no primeiro grupo da lista
+    if (GRUPOS.length > 0) {
+        entrarNoGrupo(GRUPOS[0]);
+    }
 }
 
 function renderizarGrupos() {
@@ -207,24 +211,17 @@ function renderizarGrupos() {
 
 function entrarNoGrupo(grupo) {
     grupoAtual = grupo;
-    $grupos.classList.add("oculto");
-    $chat.classList.remove("oculto");
-    document.getElementById("meuNome").textContent = `${nome} • ${grupo}`;
     document.getElementById("tituloChatHeader").textContent = grupo;
+
+    // Destaca o botão do grupo ativo
+    document.querySelectorAll(".btn-grupo").forEach(btn => {
+        btn.classList.toggle("ativo", btn.textContent === grupo);
+    });
+
     $entrada.focus();
     pedirPermissaoNotificacao();
     iniciarChat();
     carregarAmigos();
-}
-
-function mudarGrupo() {
-    if (unsubChat) {
-        unsubChat();
-        unsubChat = null;
-    }
-    $chat.classList.add("oculto");
-    $grupos.classList.remove("oculto");
-    renderizarGrupos();
 }
 
 // ===== AMIGOS =====
@@ -290,11 +287,11 @@ function iniciarChat() {
     if (unsubChat) unsubChat();
 
     $msgs.innerHTML = `<div class="msg-sistema" id="placeholder">
-        <span>👋</span><p>Bem-vindo! Suas mensagens aparecerão aqui.</p>
+        <span>👋</span><p>Bem-vindo ao grupo ${escapeHtml(grupoAtual)}!</p>
     </div>`;
     recebendoHistorico = true;
 
-    // Busca apenas as mensagens do grupo atual
+    // Filtra no Firebase apenas as mensagens pertencentes ao grupo atual
     const mensagensGrupoQuery = query(messagesRef, orderByChild("grupo"), equalTo(grupoAtual));
 
     unsubChat = onChildAdded(mensagensGrupoQuery, (snapshot) => {
@@ -345,7 +342,7 @@ function escapeHtml(texto) {
 // ===== ENVIAR =====
 function enviar() {
     const texto = $entrada.value.trim();
-    if (!texto) return;
+    if (!texto || !grupoAtual) return;
     push(messagesRef, {
         tipo: "texto", nome, texto,
         grupo: grupoAtual,
@@ -356,7 +353,7 @@ function enviar() {
 
 function enviarImagem(inputEl) {
     const file = inputEl.files[0];
-    if (!file) return;
+    if (!file || !grupoAtual) return;
     const reader = new FileReader();
     reader.onload = (e) => {
         push(messagesRef, {
@@ -377,7 +374,6 @@ $entrada.addEventListener("keydown", (e) => {
 window.confirmarNome = confirmarNome;
 window.criarSenha = criarSenha;
 window.confirmarSenha = confirmarSenha;
-window.mudarGrupo = mudarGrupo;
 window.abrirAmigos = abrirAmigos;
 window.fecharAmigos = fecharAmigos;
 window.adicionarAmigo = adicionarAmigo;
