@@ -26,13 +26,18 @@ body {
 
 .oculto { display: none !important; }
 
-/* TELAS DE LOGIN */
+/* TELAS DE LOGIN (CENTRALIZADAS) */
 .tela-login {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
     height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, #0f0f1a 0%, #1a1a3e 50%, #0f0f1a 100%);
+    z-index: 100;
 }
 
 .card-login {
@@ -86,7 +91,7 @@ body {
 .btn-primario:hover { background: var(--acento-hover); }
 .erro { color: #ff6b6b; font-size: 0.85rem; margin-top: 12px; min-height: 1.2em; }
 
-/* LAYOUT PRINCIPAL (ESTILO WHATSAPP/DISCORD) */
+/* LAYOUT PRINCIPAL */
 .app-container {
     display: flex;
     width: 100vw;
@@ -294,10 +299,3 @@ body {
 .add-amigo { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .add-amigo input { padding: 8px 12px; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--bg-input); color: var(--texto); outline: none; }
 .btn-fechar { width: 100%; padding: 8px; border: 1px solid var(--borda); border-radius: var(--raio); background: none; color: var(--texto-suave); cursor: pointer; }
-
-/* RESPONSIVO */
-@media (max-width: 768px) {
-    .sidebar { width: 100%; display: none; }
-    .app-container.chat-ativo .sidebar { display: none; }
-    .app-container.chat-ativo .chat-main { display: flex; }
-}
