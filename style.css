@@ -14,6 +14,19 @@
     --transicao: 0.2s ease;
 }
 
+body.light-theme {
+    --bg: #f4f4f6;
+    --bg-card: #ffffff;
+    --bg-input: #eae9f0;
+    --bg-msg: #eae9f0;
+    --bg-msg-own: #d3cff7;
+    --texto: #2d2b38;
+    --texto-suave: #6b687b;
+    --acento: #6246ea;
+    --acento-hover: #5038db;
+    --borda: #e4e4e9;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
@@ -26,13 +39,38 @@ body {
 
 .oculto { display: none !important; }
 
+/* BOTÃO DE MENU (TRÊS BARRINHAS PARA TELEMÓVEL) */
+.btn-menu {
+    background: none;
+    border: none;
+    color: var(--texto);
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: none;
+    margin-right: 10px;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: -320px;
+        height: 100vh;
+        z-index: 1000;
+        transition: left 0.3s ease;
+    }
+    .sidebar.ativa {
+        left: 0;
+    }
+    .btn-menu {
+        display: inline-block;
+    }
+}
+
 /* TELAS DE LOGIN (CENTRALIZADAS) */
 .tela-login {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -125,24 +163,41 @@ body {
     border-radius: 20px;
 }
 
-.sidebar-secao {
-    padding: 16px;
-    flex: 1;
-    overflow-y: auto;
+.sidebar-actions {
+    display: flex;
+    gap: 6px;
 }
 
-.sidebar-secao h3 {
-    font-size: 0.8rem;
+.sidebar-actions button {
+    background: none;
+    border: none;
+    color: var(--texto-suave);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 6px;
+    border-radius: 6px;
+    transition: var(--transicao);
+}
+
+.sidebar-actions button:hover {
+    background: var(--bg-input);
+    color: var(--texto);
+}
+
+.sidebar-secao {
+    padding: 16px 16px 8px 16px;
+    font-size: 0.75rem;
     text-transform: uppercase;
     color: var(--texto-suave);
     letter-spacing: 1px;
-    margin-bottom: 12px;
 }
 
 .lista-grupos {
+    padding: 0 16px 16px 16px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    overflow-y: auto;
 }
 
 .btn-grupo {
@@ -155,12 +210,50 @@ body {
     color: var(--texto);
     font-size: 0.95rem;
     cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     transition: all var(--transicao);
 }
 
 .btn-grupo:hover, .btn-grupo.ativo {
     background: var(--acento);
     color: #fff;
+}
+
+.badge-novo {
+    background-color: #f59e0b;
+    color: white;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+/* LISTA DE UTILIZADORES ONLINE NA SIDEBAR */
+.lista-online {
+    padding: 0 16px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 140px;
+    overflow-y: auto;
+}
+
+.usuario-online-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--texto-suave);
+}
+
+.ponto-verde {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 6px #4ade80;
 }
 
 /* ÁREA CENTRAL DO CHAT */
@@ -198,15 +291,19 @@ body {
     padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
 .msg {
     max-width: 65%;
-    padding: 10px 14px;
+    padding: 12px 16px;
     border-radius: 16px;
     line-height: 1.4;
     word-wrap: break-word;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    box-shadow: 0 2px 8px var(--sombra);
     animation: fadeIn 0.2s ease;
 }
 
@@ -218,10 +315,47 @@ body {
 .msg-outra { align-self: flex-start; background: var(--bg-msg); border-bottom-left-radius: 4px; }
 .msg-propria { align-self: flex-end; background: var(--bg-msg-own); border-bottom-right-radius: 4px; }
 
-.msg-autor { font-size: 0.75rem; font-weight: 700; color: var(--acento); margin-bottom: 3px; }
-.msg-autor .amigo-badge { color: #fbbf24; margin-left: 4px; }
-.msg-texto { font-size: 0.95rem; }
-.msg-img { max-width: 260px; max-height: 260px; border-radius: 10px; margin-top: 6px; display: block; }
+.msg-cabecalho {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.msg-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--acento);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.msg-autor { font-size: 0.8rem; font-weight: 700; color: var(--acento); }
+.msg-texto { font-size: 0.95rem; color: var(--texto); }
+.msg-img { max-width: 260px; max-height: 260px; border-radius: 10px; display: block; }
+
+.msg-hora {
+    font-size: 0.65rem;
+    color: var(--texto-suave);
+    align-self: flex-end;
+}
+
+.btn-apagar {
+    background: none;
+    border: none;
+    color: #ff6b6b;
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-left: auto;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.btn-apagar:hover { background: rgba(255,107,107,0.1); }
 
 .msg-sistema {
     align-self: center;
@@ -231,9 +365,10 @@ body {
     padding: 8px 20px;
     background: var(--bg-card);
     border-radius: 20px;
+    border: 1px solid var(--borda);
 }
 
-/* FOOTER */
+/* FOOTER / INPUT */
 .footer {
     display: flex;
     align-items: center;
@@ -258,7 +393,7 @@ body {
 
 .footer input[type="text"] {
     flex: 1;
-    padding: 12px 16px;
+    padding: 12px 18px;
     border: 1px solid var(--borda);
     border-radius: 24px;
     background: var(--bg-input);
@@ -278,70 +413,42 @@ body {
     justify-content: center;
     font-size: 1.1rem;
     flex-shrink: 0;
+    background: var(--acento);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background var(--transicao);
 }
+.btn-enviar:hover { background: var(--acento-hover); }
 
-/* PAINEL AMIGOS (OVERLAY) */
+/* PAINEL AMIGOS (MODAL) */
 .painel-amigos {
     position: absolute;
     top: 0; right: 0;
-    width: 300px;
+    width: 320px;
     height: 100%;
     background: var(--bg-card);
     border-left: 1px solid var(--borda);
     box-shadow: -10px 0 40px var(--sombra);
     z-index: 10;
     padding: 20px;
-}
-
-.lista-amigos { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; max-height: 250px; overflow-y: auto; }
-.amigo-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-input); border-radius: var(--raio); font-size: 0.85rem; }
-.amigo-item .remover { background: none; border: none; color: #ff6b6b; cursor: pointer; }
-.add-amigo { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-.add-amigo input { padding: 8px 12px; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--bg-input); color: var(--texto); outline: none; }
-.btn-fechar { width: 100%; padding: 8px; border: 1px solid var(--borda); border-radius: var(--raio); background: none; color: var(--texto-suave); cursor: pointer; }
-/* Estilo do Horário (Timestamp) na mensagem */
-.msg-hora {
-    font-size: 0.65rem;
-    color: var(--texto-suave);
-    text-align: right;
-    margin-top: 2px;
-}
-
-/* Indicador de novas mensagens na barra lateral */
-.btn-grupo {
-    position: relative;
     display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.painel-amigos-header {
+    display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
+    border-bottom: 1px solid var(--borda);
+    padding-bottom: 10px;
 }
 
-.badge-novo {
-    background-color: var(--cor-primaria);
-    color: white;
-    font-size: 0.7rem;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-weight: bold;
-}
-
-/* Estilo do Avatar com Inicial */
-.msg-cabecalho {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 4px;
-}
-
-.msg-avatar {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background-color: var(--cor-primaria);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    font-weight: bold;
-    text-transform: uppercase;
-}
+.lista-amigos { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 250px; }
+.amigo-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg-input); border-radius: var(--raio); font-size: 0.9rem; }
+.amigo-item .remover { background: none; border: none; color: #ff6b6b; cursor: pointer; font-weight: bold; }
+.add-amigo { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.add-amigo input { padding: 10px 14px; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--bg-input); color: var(--texto); outline: none; }
+.btn-fechar { width: 100%; padding: 10px; border: 1px solid var(--borda); border-radius: var(--raio); background: none; color: var(--texto-suave); cursor: pointer; font-weight: 600; }
+.btn-fechar:hover { background: var(--bg-input); color: var(--texto); }
