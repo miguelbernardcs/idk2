@@ -1,106 +1,109 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat</title>
+    <title>Meu Chat</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Tela de Nome -->
+    <!-- ===== TELA DE LOGIN: DIGITAR NOME ===== -->
     <div id="telaNome" class="tela-login">
         <div class="card-login">
             <div class="logo">💬</div>
-            <h1 id="tituloChat">Chat</h1>
-            <p class="subtitulo">Como quer ser chamado?</p>
-            <input type="text" id="inputNome" placeholder="Seu nome" maxlength="20" autofocus>
+            <h1 id="tituloChat">Meu Chat</h1>
+            <p class="subtitulo">Entre com o seu nome para começar</p>
+            <input type="text" id="inputNome" placeholder="Seu nome..." autocomplete="off">
             <button class="btn-primario" onclick="confirmarNome()">Continuar</button>
-            <p id="erroNome" class="erro"></p>
+            <div id="erroNome" class="erro"></div>
         </div>
     </div>
 
-    <!-- Tela de Criar Senha -->
+    <!-- ===== TELA DE LOGIN: CRIAR SENHA ===== -->
     <div id="telaCriarSenha" class="tela-login oculto">
         <div class="card-login">
-            <div class="logo">🔐</div>
-            <h1>Criar Senha</h1>
-            <p class="subtitulo">Primeiro uso de "<span id="nomeCriar"></span>". Crie uma senha.</p>
-            <input type="password" id="inputNovaSenha" placeholder="Nova senha (mín. 4)">
-            <input type="password" id="inputConfirmarSenha" placeholder="Confirmar senha">
-            <button class="btn-primario" onclick="criarSenha()">Criar e Entrar</button>
-            <p id="erroCriarSenha" class="erro"></p>
+            <div class="logo">🔒</div>
+            <h1>Olá, <span id="nomeCriar"></span>!</h1>
+            <p class="subtitulo">Crie uma senha de acesso</p>
+            <input type="password" id="inputNovaSenha" placeholder="Nova senha (mín. 4 caracteres)">
+            <input type="password" id="inputConfirmarSenha" placeholder="Confirme a senha">
+            <button class="btn-primario" onclick="criarSenha()">Criar Conta e Entrar</button>
+            <div id="erroCriarSenha" class="erro"></div>
         </div>
     </div>
 
-    <!-- Tela de Digitar Senha -->
+    <!-- ===== TELA DE LOGIN: DIGITAR SENHA ===== -->
     <div id="telaSenha" class="tela-login oculto">
         <div class="card-login">
-            <div class="logo">🔒</div>
-            <h1>Senha</h1>
-            <p class="subtitulo">Senha de "<span id="nomeSenha"></span>"</p>
-            <input type="password" id="inputSenha" placeholder="Senha" autocomplete="off">
+            <div class="logo">🔑</div>
+            <h1>Bem-vindo de volta, <span id="nomeSenha"></span>!</h1>
+            <p class="subtitulo">Digite sua senha para entrar</p>
+            <input type="password" id="inputSenha" placeholder="Sua senha...">
             <button class="btn-primario" onclick="confirmarSenha()">Entrar</button>
-            <p id="erroSenha" class="erro"></p>
+            <div id="erroSenha" class="erro"></div>
         </div>
     </div>
 
-    <!-- Layout de Duas Colunas (WhatsApp / Discord) -->
+    <!-- ===== APLICATIVO PRINCIPAL DE CHAT ===== -->
     <div id="appContainer" class="app-container oculto">
         
-        <!-- Barra Lateral Esquerda -->
-        <aside class="sidebar">
-            <header class="sidebar-header">
-                <span id="meuNome" class="meu-nome"></span>
-                <button class="btn-icon" onclick="abrirAmigos()" title="Amigos">👤➕</button>
-            </header>
-
-            <div class="sidebar-secao">
-                <h3>Canais / Grupos</h3>
-                <div id="listaGrupos" class="lista-grupos"></div>
+        <!-- BARRA LATERAL (SIDEBAR) -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="meu-nome" id="meuNome">Utilizador</div>
+                <div class="sidebar-actions">
+                    <button onclick="abrirCriarCanal()" title="Criar Canal">+</button>
+                    <button onclick="abrirAmigos()" title="Amigos">⭐</button>
+                    <button onclick="alternarTema()" title="Mudar Tema">🌓</button>
+                </div>
             </div>
-        </aside>
 
-        <!-- Área Principal da Conversa -->
-        <main class="chat-main">
-            
-            <header class="header">
+            <div class="sidebar-secao">Canais / Grupos</div>
+            <div id="listaGrupos" class="lista-grupos"></div>
+
+            <div class="sidebar-secao">Utilizadores Online</div>
+            <div id="listaOnline" class="lista-online"></div>
+        </div>
+
+        <!-- ÁREA CENTRAL DO CHAT -->
+        <div class="chat-main">
+            <div class="header">
                 <div class="header-info">
-                    <span class="status-dot"></span>
-                    <h2 id="tituloChatHeader">Selecione um grupo</h2>
-                </div>
-            </header>
-
-            <!-- Painel de Amigos (Overlay) -->
-            <div id="painelAmigos" class="painel-amigos oculto">
-                <div class="painel-conteudo">
-                    <h3>Meus Amigos</h3>
-                    <div id="listaAmigos" class="lista-amigos"></div>
-                    <div class="add-amigo">
-                        <input type="text" id="inputAmigo" placeholder="Nome do amigo" maxlength="20">
-                        <button class="btn-primario" onclick="adicionarAmigo()">Adicionar</button>
-                    </div>
-                    <button class="btn-fechar" onclick="fecharAmigos()">✕ Fechar</button>
+                    <button id="btnMenu" class="btn-menu" onclick="toggleSidebar()">☰</button>
+                    <div class="status-dot"></div>
+                    <h2 id="tituloChatHeader">Geral</h2>
                 </div>
             </div>
 
-            <!-- Área de Mensagens -->
-            <section id="mensagens" class="mensagens">
-                <div class="msg-sistema" id="placeholder">
-                    <span>👋</span>
-                    <p>Bem-vindo! Escolha um grupo à esquerda para conversar.</p>
-                </div>
-            </section>
+            <!-- MENSAGENS -->
+            <div id="mensagens" class="mensagens"></div>
 
-            <!-- Rodapé de Envio -->
-            <footer class="footer">
-                <button class="btn-icon" onclick="document.getElementById('fileInput').click()" title="Enviar imagem">📷</button>
-                <input type="file" id="fileInput" accept="image/*" onchange="enviarImagem(this)" style="display:none">
-                <input type="text" id="entrada" placeholder="Digite sua mensagem..." maxlength="500">
-                <button class="btn-primario btn-enviar" onclick="enviar()">➤</button>
-            </footer>
+            <!-- FOOTER / INPUT -->
+            <div class="footer">
+                <label class="btn-icon" title="Enviar Imagem">
+                    📷
+                    <input type="file" accept="image/*" style="display:none;" onchange="enviarImagem(this)">
+                </label>
+                <input type="text" id="entrada" placeholder="Digite sua mensagem..." autocomplete="off">
+                <button class="btn-enviar" onclick="enviar()">➤</button>
+            </div>
+        </div>
 
-        </main>
+        <!-- PAINEL DE AMIGOS (MODAL) -->
+        <div id="painelAmigos" class="painel-amigos oculto">
+            <div class="painel-amigos-header">
+                <h3>Amigos Favoritos</h3>
+                <button onclick="fecharAmigos()">✕</button>
+            </div>
+            <div class="add-amigo">
+                <input type="text" id="inputAmigo" placeholder="Adicionar amigo pelo nome..." autocomplete="off">
+                <button class="btn-primario" onclick="adicionarAmigo()">Adicionar</button>
+            </div>
+            <div id="listaAmigos" class="lista-amigos"></div>
+            <button class="btn-fechar" onclick="fecharAmigos()">Fechar</button>
+        </div>
+
     </div>
 
     <script type="module" src="script.js"></script>
