@@ -27,7 +27,7 @@ body {
 .tela { height: 100vh; display: flex; flex-direction: column; }
 .oculto { display: none !important; }
 
-/* TELAS DE ACESSO */
+/* ===== TELAS DE ACESSO ===== */
 #telaNome, #telaCriarSenha, #telaSenha, #telaGrupos {
     align-items: center;
     justify-content: center;
@@ -88,7 +88,7 @@ body {
 
 .erro { color: #ff6b6b; font-size: 0.85rem; margin-top: 12px; min-height: 1.2em; }
 
-/* HEADER */
+/* ===== HEADER ===== */
 .header {
     display: flex;
     align-items: center;
@@ -119,35 +119,7 @@ body {
     border-radius: 20px;
 }
 
-/* VÍDEO WEBRTC */
-.container-video {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    background: #000;
-    padding: 10px;
-}
-
-#remoteVideo {
-    width: 100%;
-    max-width: 280px;
-    height: 180px;
-    background: #1e1e1e;
-    border-radius: var(--raio);
-    object-fit: cover;
-}
-
-#localVideo {
-    width: 90px;
-    height: 90px;
-    background: #2a2a2a;
-    border-radius: var(--raio);
-    object-fit: cover;
-    border: 2px solid var(--acento);
-}
-
-/* MENSAGENS */
+/* ===== MENSAGENS ===== */
 .mensagens {
     flex: 1;
     overflow-y: auto;
@@ -157,6 +129,10 @@ body {
     gap: 10px;
     scroll-behavior: smooth;
 }
+
+.mensagens::-webkit-scrollbar { width: 6px; }
+.mensagens::-webkit-scrollbar-track { background: transparent; }
+.mensagens::-webkit-scrollbar-thumb { background: var(--borda); border-radius: 3px; }
 
 .msg {
     max-width: 75%;
@@ -179,7 +155,6 @@ body {
 .msg-autor .amigo-badge { color: #fbbf24; margin-left: 4px; }
 .msg-texto { font-size: 0.95rem; }
 .msg-img { max-width: 220px; max-height: 220px; border-radius: 10px; margin-top: 6px; display: block; }
-audio { max-width: 220px; margin-top: 6px; display: block; }
 
 .msg-sistema {
     align-self: center;
@@ -191,7 +166,10 @@ audio { max-width: 220px; margin-top: 6px; display: block; }
     border-radius: 20px;
 }
 
-/* FOOTER */
+.msg-sistema span { font-size: 1.2rem; display: block; margin-bottom: 4px; }
+.msg.historico { opacity: 0.6; }
+
+/* ===== FOOTER ===== */
 .footer {
     display: flex;
     align-items: center;
@@ -213,6 +191,7 @@ audio { max-width: 220px; margin-top: 6px; display: block; }
 }
 
 .btn-icon:hover { background: var(--bg-input); }
+#fileInput { display: none; }
 
 .footer input[type="text"] {
     flex: 1;
@@ -239,8 +218,13 @@ audio { max-width: 220px; margin-top: 6px; display: block; }
     flex-shrink: 0;
 }
 
-/* GRUPOS & PAINÉIS */
-.lista-grupos { display: flex; flex-direction: column; gap: 10px; }
+/* ===== GRUPOS ===== */
+.lista-grupos {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .btn-grupo {
     padding: 14px;
     border: 1px solid var(--borda);
@@ -251,8 +235,13 @@ audio { max-width: 220px; margin-top: 6px; display: block; }
     cursor: pointer;
     transition: background var(--transicao), border-color var(--transicao);
 }
-.btn-grupo:hover { background: var(--acento); border-color: var(--acento); }
 
+.btn-grupo:hover {
+    background: var(--acento);
+    border-color: var(--acento);
+}
+
+/* ===== PAINEL DE AMIGOS ===== */
 .painel-amigos {
     position: fixed;
     top: 0; right: 0;
@@ -271,17 +260,92 @@ audio { max-width: 220px; margin-top: 6px; display: block; }
     to   { transform: translateX(0); }
 }
 
-.painel-conteudo { padding: 24px 20px; }
-.painel-conteudo h3 { font-size: 1.1rem; margin-bottom: 16px; color: var(--texto); }
-.lista-amigos { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; max-height: 300px; overflow-y: auto; }
-.amigo-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg-input); border-radius: var(--raio); font-size: 0.9rem; }
-.amigo-item .remover { background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 1rem; padding: 4px 8px; border-radius: 4px; }
-.add-amigo { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-.add-amigo input { width: 100%; padding: 10px 14px; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--bg-input); color: var(--texto); font-size: 0.9rem; outline: none; }
-.btn-fechar { width: 100%; padding: 10px; border: 1px solid var(--borda); border-radius: var(--raio); background: none; color: var(--texto-suave); font-size: 0.85rem; cursor: pointer; }
+.painel-conteudo {
+    padding: 24px 20px;
+}
 
+.painel-conteudo h3 {
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+    color: var(--texto);
+}
+
+.lista-amigos {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.amigo-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--bg-input);
+    border-radius: var(--raio);
+    font-size: 0.9rem;
+}
+
+.amigo-item .remover {
+    background: none;
+    border: none;
+    color: #ff6b6b;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background var(--transicao);
+}
+
+.amigo-item .remover:hover { background: rgba(255,107,107,0.15); }
+
+.add-amigo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.add-amigo input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--borda);
+    border-radius: var(--raio);
+    background: var(--bg-input);
+    color: var(--texto);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color var(--transicao);
+}
+
+.add-amigo input:focus { border-color: var(--acento); }
+
+.add-amigo .btn-primario {
+    padding: 10px;
+    font-size: 0.9rem;
+}
+
+.btn-fechar {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--borda);
+    border-radius: var(--raio);
+    background: none;
+    color: var(--texto-suave);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background var(--transicao);
+}
+
+.btn-fechar:hover { background: var(--bg-input); }
+
+/* ===== RESPONSIVO ===== */
 @media (max-width: 480px) {
     .card-login { margin: 16px; padding: 36px 24px; }
     .msg { max-width: 85%; }
+    .mensagens { padding: 14px; }
     .painel-amigos { width: 100%; }
-  }
+}   
