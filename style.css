@@ -235,7 +235,7 @@ body {
     font-weight: bold;
 }
 
-/* LISTA ONLINE */
+/* LISTA ONLINE / OFFLINE */
 .lista-online {
     padding: 0 16px 16px 16px;
     display: flex;
@@ -254,11 +254,17 @@ body {
 }
 
 .ponto-verde {
-    width: 8px;
-    height: 8px;
+    width: 8px; height: 8px;
     border-radius: 50%;
     background: #4ade80;
     box-shadow: 0 0 6px #4ade80;
+}
+
+.ponto-vermelho {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    box-shadow: 0 0 6px #ef4444;
 }
 
 /* ÁREA DO CHAT */
@@ -327,8 +333,7 @@ body {
 }
 
 .msg-avatar {
-    width: 24px;
-    height: 24px;
+    width: 24px; height: 24px;
     border-radius: 50%;
     background: var(--acento);
     color: white;
@@ -430,8 +435,7 @@ body {
 .painel-amigos {
     position: absolute;
     top: 0; right: 0;
-    width: 320px;
-    height: 100%;
+    width: 320px; height: 100%;
     background: var(--bg-card);
     border-left: 1px solid var(--borda);
     box-shadow: -10px 0 40px var(--sombra);
