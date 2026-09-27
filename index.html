@@ -1,56 +1,133 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meu Chat Completo</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-container">
-    <!-- Menu Lateral -->
-    <aside class="sidebar">
-      <div class="profile-card">
-        <h3>Meu Perfil</h3>
-        <p>ID: <b id="meu-user-id">...</b></p>
-        <button onclick="atualizarNome(prompt('Novo nome:'))">Mudar Nome</button>
-        <button onclick="excluirConta()" class="btn-danger">Excluir Conta</button>
-      </div>
 
-      <div class="groups-card">
-        <h3>Meus Grupos</h3>
-        <ul id="lista-grupos"></ul>
-        <button onclick="criarGrupoPrivado(prompt('Nome do Grupo Privado:'))">+ Criar Grupo</button>
-        <button onclick="adicionarMembroAoGrupo(prompt('ID do usuário a adicionar:'))">+ Add Membro</button>
-        <button onclick="removerMembroDoGrupo(prompt('ID do usuário a remover:'))" class="btn-warning">- Rem Membro</button>
-      </div>
-    </aside>
-
-    <!-- Área Principal de Chat -->
-    <main class="chat-area">
-      <header class="chat-header">
-        <h2 id="nome-grupo-atual">Geral</h2>
-        <div class="call-controls">
-          <button onclick="iniciarChamada(true)">📹 Vídeo</button>
-          <button onclick="iniciarChamada(false)">📞 Voz</button>
-          <button onclick="desligarChamada()" class="btn-danger">❌ Desligar</button>
+    <!-- Tela de Nome -->
+    <div id="telaNome" class="tela">
+        <div class="card-login">
+            <div class="logo">💬</div>
+            <h1 id="tituloChat">Chat</h1>
+            <p class="subtitulo">Como quer ser chamado?</p>
+            <input type="text" id="inputNome" placeholder="Seu nome" maxlength="20">
+            <button class="btn-primario" onclick="confirmarNome()">Continuar</button>
+            <p id="erroNome" class="erro"></p>
         </div>
-      </header>
+    </div>
 
-      <div class="video-container">
-        <video id="localVideo" autoplay playsinline muted></video>
-      </div>
+    <!-- Tela de Criar Senha -->
+    <div id="telaCriarSenha" class="tela oculto">
+        <div class="card-login">
+            <div class="logo">🔐</div>
+            <h1>Criar Senha</h1>
+            <p class="subtitulo">Primeiro uso de "<span id="nomeCriar"></span>". Crie uma senha.</p>
+            <input type="password" id="inputNovaSenha" placeholder="Nova senha (mín. 4)">
+            <input type="password" id="inputConfirmarSenha" placeholder="Confirmar senha">
+            <button class="btn-primario" onclick="criarSenha()">Criar e Entrar</button>
+            <p id="erroCriarSenha" class="erro"></p>
+        </div>
+    </div>
 
-      <div id="chat-box" class="chat-box"></div>
+    <!-- Tela de Digitar Senha -->
+    <div id="telaSenha" class="tela oculto">
+        <div class="card-login">
+            <div class="logo">🔒</div>
+            <h1>Senha</h1>
+            <p class="subtitulo">Senha de "<span id="nomeSenha"></span>"</p>
+            <input type="password" id="inputSenha" placeholder="Senha" autocomplete="off">
+            <button class="btn-primario" onclick="confirmarSenha()">Entrar</button>
+            <p id="erroSenha" class="erro"></p>
+        </div>
+    </div>
 
-      <footer class="chat-footer">
-        <input type="text" id="input-msg" placeholder="Digite sua mensagem...">
-        <button onclick="enviarMensagemTexto()">Enviar</button>
-        <button onmousedown="iniciarGravacaoAudio()" onmouseup="pararGravacaoAudio()" class="btn-mic">🎤 Áudio</button>
-      </footer>
-    </main>
-  </div>
+    <!-- Tela de Grupos -->
+    <div id="telaGrupos" class="tela oculto">
+        <div class="card-login">
+            <div class="logo">👥</div>
+            <h1>Escolha um grupo</h1>
+            <p class="subtitulo">Onde quer conversar?</p>
+            <div id="listaGrupos" class="lista-grupos"></div>
+            
+            <hr style="margin: 15px 0; border-color: var(--borda);">
+            
+            <input type="text" id="inputNovoGrupo" placeholder="Nome do grupo privado" style="margin-bottom: 8px;">
+            <button class="btn-primario" onclick="criarNovoGrupo()">+ Criar Grupo Privado</button>
+        </div>
+    </div>
 
-  <script type="module" src="script.js"></script>
+    <!-- Tela do Chat -->
+    <div id="telaChat" class="tela oculto">
+        <header class="header">
+            <div class="header-info">
+                <span class="status-dot"></span>
+                <h2 id="tituloChatHeader">Chat</h2>
+            </div>
+            <div class="header-acoes">
+                <button class="btn-icon" onclick="iniciarChamada(true)" title="Chamada de Vídeo">📹</button>
+                <button class="btn-icon" onclick="desligarChamada()" title="Desligar Chamada">❌</button>
+                <button id="btnGerenciarGrupo" class="btn-icon oculto" onclick="abrirGerenciadorGrupo()" title="Gerenciar Membros (ADM)">⚙️</button>
+                <button class="btn-icon" onclick="abrirAmigos()" title="Amigos">👤➕</button>
+                <button class="btn-icon" onclick="mudarGrupo()" title="Mudar grupo">👥</button>
+                <span id="meuNome" class="meu-nome" onclick="alterarNomePerfil()" style="cursor:pointer;" title="Clique para mudar de nome"></span>
+                <button class="btn-icon" onclick="excluirMinhaConta()" title="Excluir Conta" style="color:#ff6b6b;">🗑️</button>
+            </div>
+        </header>
+
+        <!-- Container de Vídeo WebRTC -->
+        <div id="containerVideo" class="container-video oculto">
+            <video id="remoteVideo" autoplay playsinline></video>
+            <video id="localVideo" autoplay playsinline muted></video>
+        </div>
+
+        <!-- Painel de Gerenciamento de Membros (Exclusivo ADM) -->
+        <div id="painelGrupo" class="painel-amigos oculto">
+            <div class="painel-conteudo">
+                <h3>👑 Painel de ADM do Grupo</h3>
+                <div id="listaMembrosGrupo" class="lista-amigos"></div>
+                <div class="add-amigo">
+                    <input type="text" id="inputNovoMembro" placeholder="Nome do usuário">
+                    <button class="btn-primario" onclick="adicionarMembro()">Adicionar Membro</button>
+                </div>
+                <button class="btn-fechar" onclick="fecharGerenciadorGrupo()">✕ Fechar</button>
+            </div>
+        </div>
+
+        <!-- Painel de Amigos -->
+        <div id="painelAmigos" class="painel-amigos oculto">
+            <div class="painel-conteudo">
+                <h3>Meus Amigos</h3>
+                <div id="listaAmigos" class="lista-amigos"></div>
+                <div class="add-amigo">
+                    <input type="text" id="inputAmigo" placeholder="Nome do amigo" maxlength="20">
+                    <button class="btn-primario" onclick="adicionarAmigo()">Adicionar</button>
+                </div>
+                <button class="btn-fechar" onclick="fecharAmigos()">✕ Fechar</button>
+            </div>
+        </div>
+
+        <main id="mensagens" class="mensagens">
+            <div class="msg-sistema" id="placeholder">
+                <span>👋</span>
+                <p>Bem-vindo! Suas mensagens aparecerão aqui.</p>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <button class="btn-icon" onclick="document.getElementById('fileInput').click()" title="Enviar imagem">📷</button>
+            <input type="file" id="fileInput" accept="image/*" onchange="enviarImagem(this)" style="display:none">
+            
+            <button class="btn-icon" onmousedown="iniciarGravacaoAudio()" onmouseup="pararGravacaoAudio()" title="Segure para gravar áudio">🎤</button>
+
+            <input type="text" id="entrada" placeholder="Digite sua mensagem..." maxlength="500">
+            <button class="btn-primario btn-enviar" onclick="enviar()">➤</button>
+        </footer>
+    </div>
+
+    <script type="module" src="script.js"></script>
 </body>
 </html>
