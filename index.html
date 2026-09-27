@@ -51,11 +51,13 @@
         <!-- BARRA LATERAL (SIDEBAR) -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <div class="meu-nome" id="meuNome">Utilizador</div>
+                <!-- Clicar no nome agora abre o menu de gerir conta (Mudar Nome / Deletar Conta) -->
+                <div class="meu-nome" id="meuNome" title="Gerir Conta" onclick="abrirMenuConta()" style="cursor: pointer;">Utilizador ⚙️</div>
                 <div class="sidebar-actions">
                     <button onclick="abrirCriarCanal()" title="Criar Canal">+</button>
                     <button onclick="abrirAmigos()" title="Amigos">⭐</button>
                     <button onclick="alternarTema()" title="Mudar Tema">🌓</button>
+                    <button onclick="sairDaConta()" title="Terminar Sessão" style="color: #ff6b6b;">🚪</button>
                 </div>
             </div>
 
